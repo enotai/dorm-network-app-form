@@ -1,2 +1,7 @@
-# dorm-network-app-form
+# Dorm-Network-App-Form
 学寮ネットワーク用申請フォーム
+
+##なにをするのか
+フォームを入力するとCSVをはき出す
+
+すこしいじれば様々な用途に使用できそう
