@@ -10,17 +10,13 @@
 session_start();//セッションによって変数状態維持
 
 /*===文字列を安全なものへ置換===*/
-function s($string){
+function s($string) {
   $string = htmlspecialchars($string, ENT_QUOTES, 'UTF-8');
 
-  // magic_quotes_gpcがONの場合はエスケープを解除する
-  if (get_magic_quotes_gpc()) {
-    $string = stripslashes($string);
-  }
+  if(get_magic_quotes_gpc()) $string = stripslashes($string);
 
   return $string;
 }
-
 
 
 /*===MACアドレス取得(シェルスクリプト実行)===*/
@@ -33,25 +29,21 @@ $mac_addr = strtoupper($mac_addr);
 
 /*===POST内容取得===*/
 //セッション変数にPOST内容を代入
+$post_array = ['gender', 'room', 'grade', 'dept', 'student_id', 'last_roma_name', 'first_roma_name', 'last_name', 'first_name', 'mac_address', 'agreement'];
 
-$_SESSION['gender']　=　s($_POST['gender']);//性別
-$_SESSION['room']　=　s($_POST['room']);//部屋番号
-$_SESSION['grade']　=　s($_POST['grade']);//学年
-$_SESSION['dept']　=　s($_POST['dept']);//学科
-$_SESSION['student_id']　=　s($_POST['student-id']);//学籍番号
-$_SESSION['last_roma_name']　=　s($_POST['last-name-roma']);//姓(roma)
-$_SESSION['first_roma_name']　=　s($_POST['first-name-roma']);//名(roma)
-$_SESSION['last_name']　=　s($_POST['last-name']);//姓
-$_SESSION['first_name']　=　s($_POST['first-name']);//名
-$_SESSION['mac_address']　=　s($_POST['mac-address']);//MACアドレス
-$_SESSION['agreement']　=　s($_POST['agreement']);//規約書に同意したか
+foreach($post_array as $value){
+  $_SESSION[$value] = $_POST[$value];
+}
 
 
 /*===POST内容確認===*/
 //正規表現により入力された文字列が正しいものかcheck
 //エラーがあった場合error配列に1
 
-$error = ['gender', 'room', 'grade', 'dept', 'student_id', 'last_roma_name', 'first_roma_name', 'mac_address', 'agreement'];//エラー配列
+$error = [
+  'gender' => 0, 'room' => 0, 'grade' => 0, 'dept' => 0, 'student_id' => 0,
+  'last_roma_name' => 0, 'first_roma_name' => 0, 'mac_address' => 0, 'agreement' => 0
+];//エラー配列 / キーだけ
 
 if(!$_SESSION['gender'] == ('male' | 'female')) $error['gender'] = 1;
 if(!preg_match('/^[0-9]{3}$/', $_SESSION['room'])) $error['room'] = 1;
@@ -66,14 +58,14 @@ if(!$_SESSION['agreement']) $error['agreement'] = 1;
 
 /*===確認ページへ移動===*/
 $error_count = 0;//エラー個数の初期化
-foreach($error as $key){//エラー個数のカウント
+foreach($error as $key) {//エラー個数のカウント
   $error_count += $key;
 }
 
-if($error_count === 0){//すべてのエラーが存在しない場合
+//すべてのエラーが存在しない場合
+if($error_count === 0) {
   header("Location: ./application-form-confirm");//confirmに移動
 }
-
 
 
 include('./template/define.php');
@@ -84,9 +76,9 @@ include('./template/top.php');
     <div id="main" class="col-md-10">
       <h1>学寮ネットワーク 申請フォーム</h1>
 
-      <?php //右は初回入力時の対策用 すべてエラーがあるときも表示しない
+      <?php // 右は初回入力時の対策用 すべてエラーがあるときも以下を表示しない
       if($error_count && !($error_count == count($error))): ?>
-      <h3 style="color: #b92c28" class="col-md-offset-2">入力内容にエラーがあります</h3>
+        <h3 style="color: #b92c28" class="col-md-offset-2">入力内容にエラーがあります</h3>
       <?php endif; ?>
 
 
@@ -115,25 +107,16 @@ include('./template/top.php');
           <label for="proj" class="col-md-2 col-md-offset-1 control-label">部屋番号</label>
 
           <div class="col-md-4">
-            <input type="text" class="form-control" name="room" id="room" placeholder="107" value="<?php echo $_SESSION['room'] ?>">
+            <input type="text" class="form-control" name="room" id="room" placeholder="107"
+                   value="<?php echo $_SESSION['room'] ?>">
           </div>
         </div>
 
         <div class="form-group">
-          <label for="class" class="col-md-2 col-md-offset-1 control-label">学科 / 学年</label>
+          <label for="class" class="col-md-2 col-md-offset-1 control-label">学年 / 学科</label>
 
           <div class="col-md-7">
             <div class="row">
-              <div class="col-md-6">
-                <select class="form-control" name="dept">
-                  <option value="M">機械工学科</option>
-                  <option value="E" selected>電気電子工学科</option>
-                  <option value="D">電子制御工学科</option>
-                  <option value="J">情報工学科</option>
-                  <option value="C">環境都市工学科</option>
-                </select>
-              </div>
-
               <div class="col-md-6">
                 <select class="form-control" name="grade">
                   <option value="1">1年</option>
@@ -144,6 +127,16 @@ include('./template/top.php');
                   <option value=“9”>留学生</option>
                 </select>
               </div>
+
+              <div class="col-md-6">
+                <select class="form-control" name="dept">
+                  <option value="M">機械工学科</option>
+                  <option value="E" selected>電気電子工学科</option>
+                  <option value="D">電子制御工学科</option>
+                  <option value="J">情報工学科</option>
+                  <option value="C">環境都市工学科</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
@@ -152,7 +145,8 @@ include('./template/top.php');
           <label for="proj" class="col-md-2 col-md-offset-1 control-label">学籍番号</label>
 
           <div class="col-md-4">
-            <input type="text" class="form-control" name="student-id" id="student-id" placeholder="12-227" value="<?php echo $_SESSION['student_id'] ?>">
+            <input type="text" class="form-control" name="student_id" id="student-id" placeholder="12-227"
+                   value="<?php echo $_SESSION['student_id'] ?>">
           </div>
         </div>
 
@@ -163,10 +157,12 @@ include('./template/top.php');
           <div class="col-md-7">
             <div class="row">
               <div class="col-md-6">
-                <input type="text" class="form-control" name="last-name-roma" placeholder="sei" value="<?php echo $_SESSION['last_roma_name'] ?>">
+                <input type="text" class="form-control" name="last_roma_name" placeholder="sei"
+                       value="<?php echo $_SESSION['last_roma_name'] ?>">
               </div>
               <div class="col-md-6">
-                <input type="text" class="form-control" name="first-name-roma" placeholder="mei" value="<?php echo $_SESSION['first_roma_name'] ?>">
+                <input type="text" class="form-control" name="first_roma_name" placeholder="mei"
+                       value="<?php echo $_SESSION['first_roma_name'] ?>">
               </div>
             </div>
           </div>
@@ -178,10 +174,12 @@ include('./template/top.php');
           <div class="col-md-7">
             <div class="row">
               <div class="col-md-6">
-                <input type="text" class="form-control" name="last-name" placeholder="姓" value="<?php echo $_SESSION['last_name'] ?>">
+                <input type="text" class="form-control" name="last_name" placeholder="姓"
+                       value="<?php echo $_SESSION['last_name'] ?>">
               </div>
               <div class="col-md-6">
-                <input type="text" class="form-control" name="first-name" placeholder="名" value="<?php echo $_SESSION['first_name'] ?>">
+                <input type="text" class="form-control" name="first_name" placeholder="名"
+                       value="<?php echo $_SESSION['first_name'] ?>">
               </div>
             </div>
           </div>
@@ -191,29 +189,29 @@ include('./template/top.php');
           <label for="proj" class="col-md-2 col-md-offset-1 control-label">MACアドレス</label>
 
           <div class="col-md-4">
-            <input type="text" class="form-control" name="mac-address" id="mac-address" placeholder="" value="<?php echo $_SESSION['mac_address'] ?>">
+            <input type="text" class="form-control" name="mac_address" id="mac-address" placeholder=""
+                   value="<?php echo $_SESSION['mac_address'] ?>">
+
             <p class="text-primary">上記には現在使用しているパソコンの<br>MACアドレスが表示されています</p>
           </div>
         </div>
 
         <div class="col-md-offset-2" style="margin-top: 60px">
           <h3>学寮ネットワークを使うにあたっての規定</h3>
-          <textarea cols="100" rows="15" readonly>・ 勉学・学術研究のために利用します．
-            ・ 著作権の侵害をいたしません．
-            ・ 著作物を容易にアップロード・ダウンロードできるソフトウェア（Winny，Share等）は使用いたしません。
-            ・ VPN、VPS及び学術目的内においてもサーバを圧迫するような行為をいたしません。
-            ・ 物品の売買における着払いの利用、及びオークションは使用しません。
-            ・ ネチケットに反する行為をいたしません。
-            ・ 電子掲示板, メーリングリスト, チャット等での誹謗中傷をいたしません。
-            ・ 個人情報公開の乱用をいたしません。
-            ・ 公序良俗に反する利用をいたしません。
-            ・ 割り当てられるIPアドレスを不正に利用しません。
-            ・ コンピュータウィルス対策ソフトを導入いたします。
-            ・ 大きなサイズのファイルをダウンロードいたしません。
-            ・ 常時電源投入いたしません。
-            ・ バグを発見した際にも、サーバーへの不正アクセス、不正登録などせず、ネットワーク委員長に報告します。
-          </textarea>
-
+          <textarea cols="112" rows="14" readonly>・ 勉学・学術研究のために利用します。
+・ 著作権の侵害をいたしません。
+・ 著作物を容易にアップロード・ダウンロードできるソフトウェア（Winny，Share等）は使用いたしません。
+・ VPN、VPS及び学術目的内においてもサーバを圧迫するような行為をいたしません。
+・ 物品の売買における着払いの利用、及びオークションは使用しません。
+・ ネチケットに反する行為をいたしません・
+・ 電子掲示板，メーリングリスト，チャット等での誹謗中傷をいたしません。
+・ 個人情報公開の乱用をいたしません。
+・ 公序良俗に反する利用をいたしません。
+・ 割り当てられるIPアドレスを不正に利用しません。
+・ コンピュータウィルス対策ソフトを導入いたします。
+・ 大きなサイズのファイルをダウンロードいたしません。
+・ 常時電源投入いたしません。
+・ バグを発見した際にも、サーバーへの不正アクセス、不正登録などせず、ネットワーク委員長に報告します。</textarea>
 
           <div class="form-group">
             <div class="row">
