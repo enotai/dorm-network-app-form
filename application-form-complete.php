@@ -5,7 +5,7 @@
  * Date: 2015/09/19
  * Time: 23:02
  * Description: 学寮ネットワーク申請完了 / ファイル書き込み
- * Comment: scandir関数によりファイルの一覧を取得可能→できました
+ * Comment: scandir関数によりファイルの一覧を取得可能→できました / アクセス権の設定をどうにか
  */
 if(!($_SERVER['HTTP_REFERER'] == 'http://localhost/10.12.1.2.ver2/application-form-confirm')) header("Location: http://10.12.1.2:8080/");//前のページが確認フォームか
 
@@ -39,15 +39,23 @@ $first_name = s($_SESSION['first_name']);//名
 $mac_address = s($_SESSION['mac_address']);//MACアドレス
 
 
-$mac_dir = scandir('./data/' . $gender . '/' . $grade);//Strict Standardsエラー対策
 /*===過去ファイル読み出し===*/
+$mac_dir = scandir('./data/' . $gender . '/' . $grade);//Strict Standardsエラー対策
 if($latest_file_name = end($mac_dir))//最新のファイル読み出し
   $latest_file_contents = file_get_contents('./data/' . $gender . '/' . $grade . '/' . $latest_file_name);//
 else $latest_file_contents = '';//ファイルが存在しなければ、空のファイルとする
 
 
-/*===ファイル書き込み準備===*/
+/*===台数カウント===*/
 $count = 0;//台数カウント用
+$latest_file_contents_line = explode("\n", $latest_file_contents);//改行コードが謎
+
+for($i = 0; $i < count($latest_file_contents_line); $i++){
+  if(is_int(strpos($latest_file_contents_line[$i], $first_roma_name . '_' . $last_roma_name)))//文字列が最初に登場する場所が整数か / 登場しなければfalseを返す
+    $count++;//条件に一致した個数
+}
+
+/*===ファイル書き込み準備===*/
 
 $last_roma_name = strtolower($last_roma_name);
 $first_roma_name = strtolower($first_roma_name);
@@ -92,7 +100,7 @@ include('./template/top.php');
 
   <div class="container">
 
-    <?php // セッション判定
+    <?php // セッション判定 / mac_addressである意味はない
     if(isset($_SESSION['mac_address'])): ?>
       <h1>学寮ネットワーク 登録完了</h1>
       <h3>以上で登録は完了となります。ありがとうございました。</h3>
